@@ -15,8 +15,22 @@ export async function createGitHubClient() {
   }
 
   if (GHE_VERSION) {
-    const plugin = await import(`@octokit/plugin-enterprise-rest/ghe-${GHE_VERSION}/index.js`);
-    Octokit.plugin(plugin);
+    const { enterpriseServer36, enterpriseServer37, enterpriseServer38, enterpriseServer39 } = await import(
+      `@octokit/plugin-enterprise-server`
+    );
+
+    if (GHE_VERSION !== '3.6' && GHE_VERSION !== '3.7' && GHE_VERSION !== '3.8' && GHE_VERSION !== '3.9') {
+      throw new Error(`GitHub Enterprise Server v${GHE_VERSION} is not supported.`);
+    }
+
+    const plugins = {
+      '3.6': enterpriseServer36,
+      '3.7': enterpriseServer37,
+      '3.8': enterpriseServer38,
+      '3.9': enterpriseServer39,
+    };
+
+    Octokit.plugin(plugins[GHE_VERSION]);
   }
 
   if (GHE_API_URL) {
